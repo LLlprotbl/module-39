@@ -1,0 +1,67 @@
+stages:
+  - build
+  - test
+  - image
+
+variables:
+  PUBLIC_REGISTRY_HOST: docker.io
+  PUBLIC_REGISTRY_OWNER: 3avarka
+  PUBLIC_REGISTRY_APP_NAME: module-39
+  GOPATH: $CI_PROJECT_DIR/.go
+  DOCKER_TLS_CERTDIR: "/certs"
+
+default:
+  image: golang:1.21
+
+cache:
+  paths:
+    - .go/pkg/mod/
+    - .cache/golangci-lint/
+
+build_app:
+  stage: build
+  script:
+    - CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o ./${PUBLIC_REGISTRY_APP_NAME} ./
+  artifacts:
+    paths:
+      - ${PUBLIC_REGISTRY_APP_NAME}
+
+test:
+  stage: test
+  script:
+    - echo "No tests!"
+  rules:
+    - when: always
+
+lint:
+  stage: test
+  script:
+    - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.54.2
+    - golangci-lint --version
+    - golangci-lint run
+  allow_failure: true
+  cache:
+    policy: pull-push
+
+build_image:stable:
+  stage: image
+  image: docker:latest
+  services:
+    - name: docker:dind
+      command: ["--tls=false"]
+  script:
+    - echo "No build image commands!!!"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+
+build_image:latest:
+  stage: image
+  image: docker:latest
+  services:
+    - name: docker:dind
+      command: ["--tls=false"]
+  script:
+    - echo "No build image commands!!!"
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: manual
