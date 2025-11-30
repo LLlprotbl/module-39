@@ -1,4 +1,4 @@
-Makefile
+﻿# Makefile
 PUBLIC_REGISTRY_HOST=docker.io
 PUBLIC_REGISTRY_OWNER=LLlprotbl
 PUBLIC_REGISTRY_APP_NAME=module-39
